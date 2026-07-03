@@ -1,0 +1,6 @@
+.pyc
+__pycache__/
+.ipynb_checkpoints/
+clinica_dislexia.db
+static/audios/*
+!static/audios/.gitkeep

@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Panel Docente - Clínica Dislexia</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body { 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+            min-height: 100vh; 
+            padding: 40px 0; 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .glass-panel { 
+            background: rgba(255, 255, 255, 0.95); 
+            backdrop-filter: blur(15px); 
+            border-radius: 20px; 
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            padding: 30px; 
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.2);
+            transition: all 0.3s ease;
+        }
+        .glass-panel:hover {
+            box-shadow: 0 12px 40px 0 rgba(31, 38, 135, 0.35);
+            transform: translateY(-2px);
+        }
+        .paciente-card { 
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); 
+            border-radius: 15px; 
+            padding: 20px; 
+            margin-bottom: 15px;
+            transition: all 0.3s ease;
+            border-left: 5px solid #667eea;
+        }
+        .paciente-card:hover {
+            transform: translateX(5px);
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+        }
+        .header-section {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.2);
+        }
+        .form-control, .form-select {
+            border-radius: 10px;
+            border: 2px solid #e0e0e0;
+            padding: 12px 15px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+        .form-control:focus, .form-select:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            padding: 12px 30px;
+            border-radius: 10px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+        .btn-sm {
+            border-radius: 20px;
+            font-size: 0.9rem;
+            padding: 8px 15px;
+            font-weight: 600;
+        }
+        .titulo-seccion {
+            color: #667eea;
+            font-weight: 700;
+            margin-bottom: 20px;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 10px;
+        }
+        .info-paciente {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            flex-wrap: wrap;
+        }
+        .datos-paciente {
+            flex: 1;
+            min-width: 200px;
+        }
+        .datos-paciente strong {
+            color: #667eea;
+        }
+        .datos-paciente small {
+            color: #666;
+            font-size: 0.95rem;
+        }
+        .botones-accion {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+        }
+    </style>
+</head>
+<body>
+<div class="container-lg">
+    <!-- Header -->
+    <div class="header-section d-flex justify-content-between align-items-center">
+        <div>
+            <h1 style="margin-bottom: 5px;"><i class="fas fa-user-tie"></i> Bienvenido, {{ nombre_docente }}</h1>
+            <p style="margin: 0; font-size: 0.95rem; opacity: 0.9;">Panel de Gestión del Tamizaje de Dislexia</p>
+        </div>
+        <a href="/logout" class="btn btn-light">
+            <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+        </a>
+    </div>
+
+    <div class="row">
+        <!-- Registrar Nuevo Estudiante -->
+        <div class="col-lg-5 mb-4">
+            <div class="glass-panel">
+                <h4 class="titulo-seccion"><i class="fas fa-user-plus"></i> Registrar Nuevo Estudiante</h4>
+                <form action="/registrar_paciente" method="POST" id="formRegistro">
+                    <div class="mb-3">
+                        <label class="form-label"><strong>Nombres</strong></label>
+                        <input type="text" name="nombres" class="form-control" placeholder="Ej: Juan" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label"><strong>Apellidos</strong></label>
+                        <input type="text" name="apellidos" class="form-control" placeholder="Ej: García López" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label"><strong>DNI (8 dígitos)</strong></label>
+                        <input type="text" name="dni" class="form-control" placeholder="Ej: 12345678" maxlength="8" pattern="[0-9]{8}" required>
+                        <small class="text-muted">Debe tener exactamente 8 números</small>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label"><strong>Edad (3-5 años)</strong></label>
+                        <input type="number" name="edad" class="form-control" placeholder="Ej: 4" min="3" max="5" required>
+                        <small class="text-muted">El alumno debe tener entre 3 y 5 años</small>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="fas fa-save"></i> Guardar Estudiante
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Mis Estudiantes -->
+        <div class="col-lg-7">
+            <div class="glass-panel">
+                <h4 class="titulo-seccion"><i class="fas fa-list"></i> Mis Estudiantes</h4>
+                {% if pacientes %}
+                    {% for paciente in pacientes %}
+                    <div class="paciente-card">
+                        <div class="info-paciente">
+                            <div class="datos-paciente">
+                                <strong style="font-size: 1.1rem;"><i class="fas fa-child"></i> {{ paciente.nombres }} {{ paciente.apellidos }}</strong><br>
+                                <small><i class="fas fa-id-card"></i> DNI: {{ paciente.dni }}</small><br>
+                                <small><i class="fas fa-birthday-cake"></i> {{ paciente.edad }} años | <i class="fas fa-calendar-alt"></i> {{ paciente.fecha_registro[:10] }}</small>
+                            </div>
+                            <div class="botones-accion">
+                                <a href="/historial/{{ paciente.id_paciente }}" class="btn btn-outline-info btn-sm">
+                                    <i class="fas fa-chart-bar"></i> Reporte
+                                </a>
+                                <a href="/editar_paciente/{{ paciente.id_paciente }}" class="btn btn-outline-warning btn-sm">
+                                    <i class="fas fa-edit"></i> Editar
+                                </a>
+                                <a href="/evaluacion/{{ paciente.id_paciente }}" class="btn btn-success btn-sm">
+                                    <i class="fas fa-play"></i> Tamizaje
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="text-center mt-5 mb-5">
+                        <i class="fas fa-inbox" style="font-size: 3rem; color: #ccc;"></i>
+                        <p class="text-muted mt-3">Aún no tienes estudiantes registrados.</p>
+                        <p class="text-muted small">Registra un nuevo estudiante en el panel de la izquierda para comenzar.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

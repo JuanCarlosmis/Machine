@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Reporte Clínico</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body { 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+            min-height: 100vh; 
+            padding: 40px 0; 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .glass-panel { 
+            background: rgba(255, 255, 255, 0.95); 
+            backdrop-filter: blur(15px); 
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            padding: 30px; 
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.2);
+        }
+        .header-reporte {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 25px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
+        }
+        .resumen-box {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-left: 5px solid #667eea;
+        }
+        .alerta-riesgo {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a3f 100%);
+            color: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 20px rgba(255, 107, 107, 0.3);
+        }
+        .alerta-seguro {
+            background: linear-gradient(135deg, #4caf50 0%, #45a049 100%);
+            color: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 20px rgba(76, 175, 80, 0.3);
+        }
+        .stat-card {
+            background: white;
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+            margin-bottom: 10px;
+        }
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #667eea;
+        }
+        .stat-label {
+            font-size: 0.9rem;
+            color: #666;
+            margin-top: 5px;
+        }
+        .tabla-evaluaciones {
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+        }
+        .tabla-evaluaciones table {
+            margin-bottom: 0;
+        }
+        .tabla-evaluaciones thead {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .tabla-evaluaciones tbody tr {
+            border-bottom: 1px solid #f0f0f0;
+        }
+        .tabla-evaluaciones tbody tr:hover {
+            background: #f9f9f9;
+        }
+        .badge-riesgo {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a3f 100%);
+            padding: 8px 15px;
+            font-weight: 600;
+        }
+        .badge-seguro {
+            background: linear-gradient(135deg, #4caf50 0%, #45a049 100%);
+            padding: 8px 15px;
+            font-weight: 600;
+        }
+        .btn-volver {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            color: white;
+            padding: 12px 30px;
+            border-radius: 10px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        .btn-volver:hover {
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+    </style>
+</head>
+<body>
+<div class="container-lg">
+    <!-- Header Reporte -->
+    <div class="header-reporte">
+        <div class="d-flex justify-content-between align-items-start">
+            <div>
+                <h1 style="margin-bottom: 10px;"><i class="fas fa-file-medical"></i> Reporte Clínico</h1>
+                <p style="margin: 0; font-size: 1.1rem;"><strong>{{ paciente.nombres }} {{ paciente.apellidos }}</strong></p>
+                <p style="margin: 5px 0 0 0; font-size: 0.95rem; opacity: 0.9;">DNI: {{ paciente.dni }} | Edad: {{ paciente.edad }} años</p>
+            </div>
+            <a href="/dashboard" class="btn btn-volver">
+                <i class="fas fa-arrow-left"></i> Volver al Panel
+            </a>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <!-- Resumen de Evaluaciones -->
+        <div class="col-lg-4">
+            <div class="glass-panel">
+                <h5 class="mb-3"><i class="fas fa-chart-pie"></i> Resumen General</h5>
+                <div class="stat-card">
+                    <div class="stat-number">{{ reporte.total_evaluaciones }}</div>
+                    <div class="stat-label">Evaluaciones Realizadas</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" style="color: #ff6b6b;">{{ reporte.evaluaciones_con_riesgo }}</div>
+                    <div class="stat-label">Con Indicador de Riesgo</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Diagnóstico General -->
+        <div class="col-lg-8">
+            <div class="glass-panel">
+                {% if reporte.total_evaluaciones == 0 %}
+                    <div class="alerta-seguro">
+                        <h5><i class="fas fa-info-circle"></i> Sin Evaluaciones</h5>
+                        <p style="margin: 10px 0 0 0;">Este estudiante aún no ha completado ninguna evaluación.</p>
+                    </div>
+                {% elif reporte.riesgo_detectado %}
+                    <div class="alerta-riesgo">
+                        <h5><i class="fas fa-exclamation-triangle"></i> Indicador de Riesgo Detectado</h5>
+                        <p style="margin: 10px 0 0 0;">Se han detectado múltiples evaluaciones con indicadores de riesgo de dislexia. Se recomienda realizar una evaluación más detallada por un especialista.</p>
+                    </div>
+                {% else %}
+                    <div class="alerta-seguro">
+                        <h5><i class="fas fa-check-circle"></i> Desarrollo Típico</h5>
+                        <p style="margin: 10px 0 0 0;">Las evaluaciones indican un desarrollo típico en lectura y comprensión. Continuar con el monitoreo regular.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Histórico de Evaluaciones -->
+    <div class="glass-panel">
+        <h5 class="mb-3"><i class="fas fa-history"></i> Histórico de Evaluaciones (Últimas 5)</h5>
+        {% if evaluaciones %}
+        <div class="tabla-evaluaciones">
+            <table class="table table-hover align-middle">
+                <thead>
+                    <tr>
+                        <th>Fecha</th>
+                        <th>Tiempo Total</th>
+                        <th>Errores</th>
+                        <th>Desviaciones Visuales</th>
+                        <th>Audio</th>
+                        <th>Diagnóstico</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for eval in evaluaciones %}
+                    <tr>
+                        <td><strong>{{ eval.fecha_evaluacion[:16] }}</strong></td>
+                        <td><i class="fas fa-hourglass-end"></i> {{ eval.tiempo_total_s }} seg</td>
+                        <td><span class="badge bg-warning">{{ eval.errores_comprension }} / 3</span></td>
+                        <td><i class="fas fa-eye"></i> {{ eval.fijaciones_oculares_anomalas }}</td>
+                        <td>
+                            {% if eval.ruta_audio %}
+                                <audio controls style="height: 32px; width: 180px;">
+                                    <source src="{{ eval.ruta_audio }}" type="audio/webm">
+                                </audio>
+                            {% else %}
+                                <span class="text-muted small">Sin registro</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if 'Riesgo' in eval.diagnostico_ia %}
+                                <span class="badge badge-riesgo">{{ eval.diagnostico_ia }}</span>
+                            {% else %}
+                                <span class="badge badge-seguro">{{ eval.diagnostico_ia }}</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-5">
+            <i class="fas fa-database" style="font-size: 3rem; color: #ccc;"></i>
+            <p class="text-muted mt-3">No hay evaluaciones registradas para este estudiante.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+</body>
+</html>

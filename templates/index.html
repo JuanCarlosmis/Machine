@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Tamizaje de Lectura - Clínica Dislexia</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js" crossorigin="anonymous"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+            min-height: 100vh; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            padding: 20px;
+        }
+        .main-container {
+            width: 100%;
+            max-width: 900px;
+        }
+        .glass-card { 
+            background: rgba(255, 255, 255, 0.95); 
+            backdrop-filter: blur(15px); 
+            border-radius: 25px; 
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            padding: 50px 40px; 
+            box-shadow: 0 12px 40px 0 rgba(31, 38, 135, 0.3);
+            animation: slideIn 0.5s ease-out;
+        }
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        #contenedor-camara { 
+            display: none; 
+            margin-bottom: 20px; 
+            text-align: center;
+        }
+        #video-webcam { 
+            width: 120px; 
+            height: 120px; 
+            border-radius: 50%; 
+            object-fit: cover; 
+            border: 5px solid #667eea; 
+            transform: scaleX(-1);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.3);
+        }
+        .header-prueba {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        .header-prueba h1 {
+            color: #667eea;
+            font-weight: 700;
+            margin-bottom: 10px;
+            font-size: 2.5rem;
+        }
+        .header-prueba p {
+            color: #666;
+            font-size: 1.1rem;
+            margin: 0;
+        }
+        .texto-lectura { 
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border-radius: 20px; 
+            padding: 35px; 
+            text-align: left; 
+            font-size: 1.3rem; 
+            line-height: 2;
+            color: #2c3e50;
+            margin-bottom: 25px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+            border-left: 5px solid #667eea;
+        }
+        .badge-info {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            font-size: 0.95rem;
+        }
+        .badge-recording {
+            display: inline-block;
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a3f 100%);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            animation: pulse 1.5s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        .progress-container {
+            margin-bottom: 25px;
+            background: #f0f0f0;
+            border-radius: 15px;
+            padding: 15px;
+            text-align: center;
+        }
+        .progress-text {
+            color: #667eea;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+        .pregunta-container {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 25px;
+            border-left: 5px solid #667eea;
+        }
+        .texto-pregunta {
+            color: #2c3e50;
+            font-size: 1.4rem;
+            font-weight: 600;
+            margin-bottom: 30px;
+        }
+        .contenedor-opciones {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .btn-opcion { 
+            background: white;
+            color: #667eea;
+            border: 2px solid #667eea;
+            margin: 0;
+            font-size: 1.1rem; 
+            padding: 15px 20px; 
+            border-radius: 12px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-align: left;
+        }
+        .btn-opcion:hover {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            transform: translateX(10px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.3);
+            border-color: transparent;
+        }
+        .btn-opcion.selected {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-color: transparent;
+        }
+        .btn-principal {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            width: 100%;
+            cursor: pointer;
+        }
+        .btn-principal:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+        }
+        .btn-principal:active {
+            transform: translateY(0);
+        }
+        #area-resultados {
+            text-align: center;
+        }
+        .resultado-titulo {
+            color: #667eea;
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 25px;
+        }
+        .resultado-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .resultado-card {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border-radius: 15px;
+            padding: 20px;
+            border-left: 5px solid #667eea;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+        }
+        .resultado-card .numero {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #667eea;
+        }
+        .resultado-card .etiqueta {
+            color: #666;
+            font-weight: 600;
+            margin-top: 10px;
+        }
+        .alerta-diagnostico {
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 25px;
+            font-size: 1.05rem;
+        }
+        .alerta-riesgo {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a3f 100%);
+            color: white;
+            border: none;
+            box-shadow: 0 5px 20px rgba(255, 107, 107, 0.3);
+        }
+        .alerta-seguro {
+            background: linear-gradient(135deg, #4caf50 0%, #45a049 100%);
+            color: white;
+            border: none;
+            box-shadow: 0 5px 20px rgba(76, 175, 80, 0.3);
+        }
+        .estado-camara {
+            color: #666;
+            font-size: 0.95rem;
+            margin-top: 10px;
+        }
+        #btn-volver {
+            display: none;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-decoration: none;
+            padding: 15px 40px;
+            border-radius: 12px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+        }
+        #btn-volver:hover {
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+        }
+    </style>
+</head>
+<body>
+
+<div class="main-container">
+    <div id="contenedor-camara">
+        <video id="video-webcam" autoplay playsinline></video>
+        <p class="estado-camara"><span id="estado-camara">⏳ Inicializando cámara...</span></p>
+    </div>
+
+    <div class="glass-card" id="tarjeta-juego">
+        <!-- PANTALLA DE INICIO -->
+        <div id="pantalla-inicio">
+            <div class="header-prueba">
+                <h1><i class="fas fa-book"></i> Tamizaje de Lectura</h1>
+                <p>Evaluación de comprensión lectora y velocidad de lectura</p>
+            </div>
+            
+            <div style="text-align: center; margin-top: 30px;">
+                <p style="color: #666; font-size: 1.1rem; margin-bottom: 30px;">
+                    <strong>¿Cómo funciona?</strong><br>
+                    Leeremos un párrafo en voz alta mientras monitoreamos tu lectura. 
+                    Luego responderás algunas preguntas sobre lo que leíste.
+                </p>
+                
+                <button class="btn-principal" onclick="iniciarTamizaje()" style="max-width: 300px; margin: 0 auto;">
+                    <i class="fas fa-play"></i> Comenzar Prueba
+                </button>
+            </div>
+        </div>
+
+        <!-- PANTALLA DE LECTURA -->
+        <div id="pantalla-lectura" style="display: none;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; flex-wrap: wrap; gap: 10px;">
+                <span class="badge-info"><i class="fas fa-book-open"></i> Lectura de Párrafo</span>
+                <span class="badge-recording"><i class="fas fa-microphone-alt"></i> Grabando Voz...</span>
+            </div>
+            <div class="texto-lectura" id="texto-a-leer"></div>
+            <button class="btn-principal" onclick="pasarAPreguntas()">
+                <i class="fas fa-check"></i> Terminé de Leer
+            </button>
+        </div>
+
+        <!-- PANTALLA DE PREGUNTAS -->
+        <div id="pantalla-preguntas" style="display: none;">
+            <div class="progress-container">
+                <div class="progress-text">Pregunta <span id="num-pregunta">1</span> de 3</div>
+                <div class="progress" style="height: 8px;">
+                    <div class="progress-bar" id="barra-progreso" style="background: linear-gradient(90deg, #667eea 0%, #764ba2 100%); width: 33%;"></div>
+                </div>
+            </div>
+            <div class="pregunta-container">
+                <div class="texto-pregunta" id="texto-pregunta">¿Qué buscaba el gato?</div>
+                <div class="contenedor-opciones" id="contenedor-opciones"></div>
+            </div>
+        </div>
+
+        <!-- ÁREA DE RESULTADOS -->
+        <div id="area-resultados" style="display: none;">
+            <div class="resultado-titulo"><i class="fas fa-check-circle"></i> ¡Evaluación Finalizada!</div>
+            
+            <div class="resultado-cards">
+                <div class="resultado-card">
+                    <div class="numero" id="res-tiempo">45</div>
+                    <div class="etiqueta"><i class="fas fa-clock"></i> Tiempo Total (seg)</div>
+                </div>
+                <div class="resultado-card">
+                    <div class="numero" id="res-errores">1</div>
+                    <div class="etiqueta"><i class="fas fa-times-circle"></i> Errores / 3</div>
+                </div>
+                <div class="resultado-card">
+                    <div class="numero" id="res-ojos">2</div>
+                    <div class="etiqueta"><i class="fas fa-eye"></i> Desviaciones Visuales</div>
+                </div>
+            </div>
+
+            <div class="alerta-diagnostico" id="alerta-diagnostico">
+                Procesando y guardando resultados...
+            </div>
+
+            <a href="/dashboard" class="btn-principal" id="btn-volver" style="display: inline-block; width: auto; margin-top: 20px;">
+                <i class="fas fa-arrow-left"></i> Volver al Panel
+            </a>
+        </div>
+    </div>
+</div>
+
+    <script>
+        // BASE DE DATOS DE LECTURAS - 5 párrafos diferentes
+        const lecturas = [
+            {
+                texto: "El pequeño gato saltó sobre la mesa de madera. Buscaba su pelota de lana roja, pero solo encontró un plato de leche fría. Bebió un poco y se quedó dormido bajo la silla.",
+                preguntas: [
+                    { texto: "¿Qué buscaba el gato?", opciones: ["Un ratón", "Su pelota de lana roja", "Agua fresca"], correcta: "Su pelota de lana roja" },
+                    { texto: "¿De qué material era la mesa?", opciones: ["De madera", "De cristal", "De plástico"], correcta: "De madera" },
+                    { texto: "¿Dónde se quedó dormido?", opciones: ["En la ventana", "Sobre la mesa", "Bajo la silla"], correcta: "Bajo la silla" }
+                ]
+            },
+            {
+                texto: "María fue al parque con su hermano pequeño. Llevaban una cometa de colores brillantes que volaba muy alto en el cielo azul. Los niños corrían felices por el pasto verde mientras reían sin parar.",
+                preguntas: [
+                    { texto: "¿Quién fue al parque con María?", opciones: ["Su mamá", "Su hermano pequeño", "Una amiga"], correcta: "Su hermano pequeño" },
+                    { texto: "¿Qué llevaban los niños?", opciones: ["Un balón", "Una cometa de colores", "Una bicicleta"], correcta: "Una cometa de colores" },
+                    { texto: "¿De qué color era el cielo?", opciones: ["Gris", "Blanco", "Azul"], correcta: "Azul" }
+                ]
+            },
+            {
+                texto: "En la granja vive un caballo blanco muy grande y un burro pequeño. Cada mañana el granjero les da de comer maíz y avena en sus comederos de madera. Los animales son muy amigos y duermen juntos en el establo.",
+                preguntas: [
+                    { texto: "¿Cómo es el caballo?", opciones: ["Pequeño y negro", "Blanco y muy grande", "Gris y lento"], correcta: "Blanco y muy grande" },
+                    { texto: "¿Qué les da de comer el granjero?", opciones: ["Pasto y agua", "Maíz y avena", "Frutas"], correcta: "Maíz y avena" },
+                    { texto: "¿Dónde duermen los animales?", opciones: ["En el patio", "En el establo", "En la cocina"], correcta: "En el establo" }
+                ]
+            },
+            {
+                texto: "Los pájaros construyen sus nidos en los árboles altos. Usan ramas, plumas y musgo para hacer un hogar cómodo y seguro. Allí ponen sus huevos de cáscara azul y esperan pacientemente a que nazcan sus polluelos.",
+                preguntas: [
+                    { texto: "¿Dónde construyen nidos los pájaros?", opciones: ["En el suelo", "En los árboles altos", "En las rocas"], correcta: "En los árboles altos" },
+                    { texto: "¿Con qué hacen los nidos?", opciones: ["Con piedras", "Con ramas, plumas y musgo", "Con barro"], correcta: "Con ramas, plumas y musgo" },
+                    { texto: "¿De qué color son los huevos?", opciones: ["Blancos", "Marrones", "De cáscara azul"], correcta: "De cáscara azul" }
+                ]
+            },
+            {
+                texto: "La escuela es un lugar especial donde aprendemos muchas cosas. Los maestros nos enseñan a leer, escribir y hacer cuentas. También jugamos con nuestros amigos en el patio y hacemos tareas muy interesantes en clase.",
+                preguntas: [
+                    { texto: "¿Qué es la escuela?", opciones: ["Un parque", "Un lugar donde aprendemos", "Una tienda"], correcta: "Un lugar donde aprendemos" },
+                    { texto: "¿Quiénes nos enseñan en la escuela?", opciones: ["Los padres", "Los maestros", "Los policías"], correcta: "Los maestros" },
+                    { texto: "¿Dónde jugamos con nuestros amigos?", opciones: ["En la clase", "En el patio", "En casa"], correcta: "En el patio" }
+                ]
+            }
+        ];
+
+        // Variables globales
+        let lecturaActual = {};
+        let preguntaActual = 0;
+        let erroresComprension = 0;
+        let desviacionesOculares = 0;
+        let rastreoActivo = false;
+        let inicioTiempoGlobal = 0;
+        let fragmentosAudio = [];
+        let mediaRecorder;
+
+        // Seleccionar lectura aleatoria
+        function seleccionarLecturaAleatoria() {
+            const indice = Math.floor(Math.random() * lecturas.length);
+            lecturaActual = lecturas[indice];
+        }
+
+        async function iniciarTamizaje() {
+            seleccionarLecturaAleatoria();
+            document.getElementById('pantalla-inicio').style.display = 'none';
+            document.getElementById('contenedor-camara').style.display = 'block';
+
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                mediaRecorder = new MediaRecorder(stream);
+                mediaRecorder.ondataavailable = e => { if (e.data.size > 0) fragmentosAudio.push(e.data); };
+                mediaRecorder.start();
+                console.log('✅ Grabación iniciada');
+            } catch (e) {
+                alert("Error: No se puede acceder al micrófono. Por favor, permite el acceso.");
+                return;
+            }
+
+            const videoElement = document.getElementById('video-webcam');
+            const faceMesh = new FaceMesh({ locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}` });
+            faceMesh.setOptions({ maxNumFaces: 1, refineLandmarks: true, minDetectionConfidence: 0.5 });
+            
+            faceMesh.onResults((resultados) => {
+                if (!rastreoActivo) return;
+                if (resultados.multiFaceLandmarks && resultados.multiFaceLandmarks.length > 0) {
+                    document.getElementById('estado-camara').innerText = "🟢 Rastreando mirada";
+                    const ojo = resultados.multiFaceLandmarks[0][468]; 
+                    if (ojo.x < 0.35 || ojo.x > 0.65 || ojo.y < 0.3 || ojo.y > 0.7) desviacionesOculares++;
+                }
+            });
+
+            new Camera(videoElement, { onFrame: async () => { await faceMesh.send({image: videoElement}); }, width: 320, height: 240 }).start();
+            rastreoActivo = true;
+
+            setTimeout(() => {
+                document.getElementById('pantalla-lectura').style.display = 'block';
+                document.getElementById('texto-a-leer').textContent = lecturaActual.texto;
+                inicioTiempoGlobal = performance.now();
+            }, 2000);
+        }
+
+        function pasarAPreguntas() {
+            document.getElementById('pantalla-lectura').style.display = 'none';
+            document.getElementById('pantalla-preguntas').style.display = 'block';
+            cargarPregunta();
+        }
+
+        function cargarPregunta() {
+            if (preguntaActual < lecturaActual.preguntas.length) {
+                const pregunta = lecturaActual.preguntas[preguntaActual];
+                document.getElementById('num-pregunta').innerText = preguntaActual + 1;
+                document.getElementById('texto-pregunta').innerText = pregunta.texto;
+                const porcentaje = ((preguntaActual + 1) / lecturaActual.preguntas.length) * 100;
+                document.getElementById('barra-progreso').style.width = porcentaje + '%';
+                
+                const contOpciones = document.getElementById('contenedor-opciones');
+                contOpciones.innerHTML = '';
+                
+                pregunta.opciones.forEach(opc => {
+                    const btn = document.createElement('button');
+                    btn.className = "btn-opcion";
+                    btn.innerHTML = '<i class="fas fa-circle"></i> ' + opc;
+                    btn.onclick = () => evaluarPregunta(opc, btn);
+                    contOpciones.appendChild(btn);
+                });
+            } else {
+                finalizarTodaLaPrueba();
+            }
+        }
+
+        function evaluarPregunta(respuestaSeleccionada, boton) {
+            document.querySelectorAll('.btn-opcion').forEach(btn => btn.disabled = true);
+            boton.classList.add('selected');
+            
+            if (respuestaSeleccionada !== lecturaActual.preguntas[preguntaActual].correcta) {
+                erroresComprension++;
+                boton.style.background = '#ff6b6b';
+                boton.style.color = 'white';
+            }
+            
+            setTimeout(() => {
+                preguntaActual++;
+                cargarPregunta();
+            }, 1000);
+        }
+
+        function finalizarTodaLaPrueba() {
+            rastreoActivo = false;
+            document.getElementById('pantalla-preguntas').style.display = 'none';
+            document.getElementById('contenedor-camara').style.display = 'none';
+            document.getElementById('area-resultados').style.display = 'block';
+
+            if (document.getElementById('video-webcam').srcObject) {
+                document.getElementById('video-webcam').srcObject.getTracks().forEach(t => t.stop());
+            }
+
+            const tiempoTotal = Math.round((performance.now() - inicioTiempoGlobal) / 1000);
+            document.getElementById('res-tiempo').innerText = tiempoTotal;
+            document.getElementById('res-errores').innerText = erroresComprension;
+            document.getElementById('res-ojos').innerText = desviacionesOculares;
+
+            if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+                mediaRecorder.stop();
+            }
+
+            const riesgo = (tiempoTotal > 40) || (desviacionesOculares > 4) || (erroresComprension >= 2);
+            const diagnostico = riesgo ? 
+                '<i class="fas fa-exclamation-triangle"></i> <strong>Indicador de Riesgo Detectado</strong><p style="margin: 10px 0 0 0;">Se han detectado indicadores que sugieren posible dislexia.</p>' :
+                '<i class="fas fa-check-circle"></i> <strong>Desarrollo Típico</strong><p style="margin: 10px 0 0 0;">Los resultados indican un desarrollo típico en lectura.</p>';
+            
+            document.getElementById('alerta-diagnostico').innerHTML = diagnostico;
+            document.getElementById('alerta-diagnostico').className = 'alerta-diagnostico ' + (riesgo ? 'alerta-riesgo' : 'alerta-seguro');
+
+            setTimeout(() => guardarResultados(tiempoTotal, erroresComprension, desviacionesOculares), 500);
+        }
+
+        function guardarResultados(tiempo, errores, desviaciones) {
+            const formData = new FormData();
+            formData.append('tiempo_s', tiempo);
+            formData.append('errores', errores);
+            formData.append('desviaciones', desviaciones);
+            const idPaciente = "{{ id_paciente | default('') }}";
+            formData.append('id_paciente', idPaciente);
+
+            if (fragmentosAudio.length > 0) {
+                const blob = new Blob(fragmentosAudio, { type: 'audio/webm' });
+                formData.append('audio', blob, `grabacion_${Date.now()}.webm`);
+            }
+
+            fetch('/evaluar', { method: 'POST', body: formData })
+            .then(res => res.json())
+            .then(data => {
+                console.log('✅ Resultado guardado:', data);
+                document.getElementById('btn-volver').style.display = 'inline-block';
+            })
+            .catch(err => {
+                console.error('❌ Error:', err);
+                document.getElementById('btn-volver').style.display = 'inline-block';
+            });
+        }
+    </script>
+</body>
+</html>
