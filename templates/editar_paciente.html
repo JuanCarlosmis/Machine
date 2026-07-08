@@ -40,7 +40,8 @@
                     </div>
                     <div class="mb-3">
                         <label class="form-label fw-bold">Edad</label>
-                        <input type="number" name="edad" class="form-control" value="{{ paciente.edad }}" required>
+                        <input type="number" name="edad" class="form-control" value="{{ paciente.edad }}" min="6" max="8" required>
+                        <small class="text-muted">Solo se permiten edades entre 6 y 8 años</small>
                     </div>
                     <button type="submit" class="btn btn-primary w-100 btn-lg rounded-pill">Guardar Cambios</button>
                 </form>

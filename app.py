@@ -75,8 +75,8 @@ def registrar_paciente():
         if len(dni) != 8 or not dni.isdigit():
             print(" DNI debe tener exactamente 8 dígitos")
             return redirect(url_for('dashboard'))
-        if edad < 3 or edad > 5:
-            print(" La edad debe estar entre 3 y 5 años")
+        if edad < 6 or edad > 8:
+            print(" La edad debe estar entre 6 y 8 años")
             return redirect(url_for('dashboard'))
         
         conexion = obtener_conexion()
@@ -112,9 +112,14 @@ def editar_paciente(id_paciente):
                 print(f" Error: DNI debe tener exactamente 8 dígitos numéricos")
                 return render_template('editar_paciente.html', paciente=paciente, error="DNI debe tener exactamente 8 dígitos")
             
+            edad_int = int(edad)
+            if edad_int < 6 or edad_int > 8:
+                print(" Error: Edad debe estar entre 6 y 8 años")
+                return render_template('editar_paciente.html', paciente=paciente, error="Edad debe estar entre 6 y 8 años")
+
             if nombres and apellidos and dni and edad:
                 conexion.execute('UPDATE Pacientes SET nombres = ?, apellidos = ?, dni = ?, edad = ? WHERE id_paciente = ?',
-                    (nombres, apellidos, dni, edad, id_paciente))
+                    (nombres, apellidos, dni, edad_int, id_paciente))
                 conexion.commit()
                 print(f"✓ Paciente actualizado: ID={id_paciente}")
         except Exception as e:
